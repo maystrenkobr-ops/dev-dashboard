@@ -8,12 +8,18 @@
   {
     "id": 2,
     "title": "Добавить сохранение в JSON",
-    "status": "todo",
+    "status": "done",
     "priority": "medium"
   },
   {
     "id": 3,
     "title": "переписка с женей",
+    "status": "done",
+    "priority": "low"
+  },
+  {
+    "id": 4,
+    "title": "погулять с Лизой",
     "status": "in_progress",
     "priority": "high"
   }

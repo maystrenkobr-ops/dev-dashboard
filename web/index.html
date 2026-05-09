@@ -32,6 +32,13 @@
 
 <div class="search-panel">
 <input id="search" class="search-input" placeholder="Поиск задачи..." oninput="renderTasks()" />
+
+<select id="priorityFilter" class="filter-select" onchange="renderTasks()">
+<option value="all">Все приоритеты</option>
+<option value="low">low</option>
+<option value="medium">medium</option>
+<option value="high">high</option>
+</select>
 </div>
 
 <div class="board">

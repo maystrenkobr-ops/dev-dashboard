@@ -12,11 +12,17 @@ renderTasks();
 
 function renderTasks() {
 const searchInput = document.getElementById("search");
-const searchText = searchInput ? searchInput.value.toLowerCase().trim() : "";
+const priorityFilter = document.getElementById("priorityFilter");
 
-const visibleTasks = allTasks.filter(task =>
-task.title.toLowerCase().includes(searchText)
-);
+const searchText = searchInput ? searchInput.value.toLowerCase().trim() : "";
+const selectedPriority = priorityFilter ? priorityFilter.value : "all";
+
+const visibleTasks = allTasks.filter(task => {
+const matchesSearch = task.title.toLowerCase().includes(searchText);
+const matchesPriority = selectedPriority === "all" || task.priority === selectedPriority;
+
+return matchesSearch && matchesPriority;
+});
 
 statuses.forEach(status => {
 const column = document.getElementById(status);
