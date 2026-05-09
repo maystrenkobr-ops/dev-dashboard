@@ -24,6 +24,9 @@ func main() {
 
 	router := gin.Default()
 
+	router.StaticFile("/static/styles.css", "web/styles.css")
+	router.StaticFile("/static/app.js", "web/app.js")
+
 	router.GET("/", func(c *gin.Context) {
 		c.File("web/index.html")
 	})
@@ -39,12 +42,12 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		if input.Title == "" {
-			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
+			c.JSON(400, gin.H{"error": "РќР°Р·РІР°РЅРёРµ Р·Р°РґР°С‡Рё РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ"})
 			return
 		}
 
@@ -53,7 +56,7 @@ func main() {
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "Некорректный статус"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
 			return
 		}
 
@@ -74,7 +77,7 @@ func main() {
 	router.PATCH("/tasks/:id/status", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -83,12 +86,12 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "Некорректный статус"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
 			return
 		}
 
@@ -101,13 +104,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.DELETE("/tasks/:id", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -115,12 +118,12 @@ func main() {
 			if task.ID == id {
 				tasks = append(tasks[:i], tasks[i+1:]...)
 				saveTasks()
-				c.JSON(200, gin.H{"message": "Задача удалена"})
+				c.JSON(200, gin.H{"message": "Р—Р°РґР°С‡Р° СѓРґР°Р»РµРЅР°"})
 				return
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.Run(":8080")
@@ -130,9 +133,9 @@ func loadTasks() {
 	data, err := os.ReadFile(tasksFile)
 	if err != nil {
 		tasks = []Task{
-			{ID: 1, Title: "Создать первый мини-проект", Status: "done"},
-			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done"},
-			{ID: 3, Title: "Вынести HTML в отдельный файл", Status: "todo"},
+			{ID: 1, Title: "РЎРѕР·РґР°С‚СЊ РїРµСЂРІС‹Р№ РјРёРЅРё-РїСЂРѕРµРєС‚", Status: "done"},
+			{ID: 2, Title: "Р”РѕР±Р°РІРёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ РІ JSON", Status: "done"},
+			{ID: 3, Title: "Р’С‹РЅРµСЃС‚Рё HTML РІ РѕС‚РґРµР»СЊРЅС‹Р№ С„Р°Р№Р»", Status: "todo"},
 		}
 		nextID = 4
 		saveTasks()

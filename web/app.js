@@ -1,0 +1,97 @@
+﻿const statuses = ["todo", "in_progress", "done"];
+
+function loadTasks() {
+fetch("/tasks")
+.then(response => response.json())
+.then(tasks => {
+statuses.forEach(status => {
+const column = document.getElementById(status);
+const count = document.getElementById(status + "-count");
+const filtered = tasks.filter(task => task.status === status);
+
+count.innerText = "(" + filtered.length + ")";
+
+if (filtered.length === 0) {
+column.innerHTML = "<div class='empty'>Пока пусто</div>";
+return;
+}
+
+column.innerHTML = filtered.map(task =>
+"<div class='task'>" +
+"<div class='task-id'>#" + task.id + "</div>" +
+"<div class='task-title'>" + escapeHtml(task.title) + "</div>" +
+"<div class='actions'>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>progress</button>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
+"<button class='small-btn delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
+"</div>" +
+"</div>"
+).join("");
+});
+});
+}
+
+function createTask() {
+const titleInput = document.getElementById("title");
+const title = titleInput.value;
+const status = document.getElementById("status").value;
+
+if (title.trim() === "") {
+alert("Введите название задачи");
+return;
+}
+
+fetch("/tasks", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+title: title,
+status: status
+})
+})
+.then(response => response.json())
+.then(() => {
+titleInput.value = "";
+loadTasks();
+});
+}
+
+function updateStatus(id, status) {
+fetch("/tasks/" + id + "/status", {
+method: "PATCH",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+status: status
+})
+})
+.then(response => response.json())
+.then(() => {
+loadTasks();
+});
+}
+
+function deleteTask(id) {
+fetch("/tasks/" + id, {
+method: "DELETE"
+})
+.then(response => response.json())
+.then(() => {
+loadTasks();
+});
+}
+
+function escapeHtml(text) {
+return text
+.replaceAll("&", "&amp;")
+.replaceAll("<", "&lt;")
+.replaceAll(">", "&gt;")
+.replaceAll('"', "&quot;")
+.replaceAll("'", "&#039;");
+}
+
+loadTasks();
