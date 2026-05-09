@@ -1,0 +1,11 @@
+﻿# Go
+*.exe
+*.test
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
