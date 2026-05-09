@@ -44,7 +44,7 @@ padding: 40px;
 background: #1f2937;
 padding: 20px;
 border-radius: 12px;
-max-width: 760px;
+max-width: 820px;
 }
 
 h1 {
@@ -60,6 +60,7 @@ border-radius: 8px;
 
 .status {
 color: #93c5fd;
+font-weight: bold;
 }
 
 input, select, button {
@@ -84,19 +85,26 @@ background: #1d4ed8;
 }
 
 .delete-btn {
-margin-top: 8px;
 background: #dc2626;
 }
 
 .delete-btn:hover {
 background: #b91c1c;
 }
+
+.status-btn {
+background: #4b5563;
+}
+
+.status-btn:hover {
+background: #6b7280;
+}
 </style>
 </head>
 <body>
 <div class="card">
 <h1>Dev Dashboard</h1>
-<p>Задачи теперь сохраняются в файл <b>data/tasks.json</b>.</p>
+<p>Задачи сохраняются в файл <b>data/tasks.json</b>.</p>
 
 <input id="title" placeholder="Новая задача" />
 
@@ -129,7 +137,11 @@ container.innerHTML = tasks.map(task =>
 "<div class='task'>" +
 "<b>#" + task.id + "</b> " + task.title +
 "<br><span class='status'>Статус: " + task.status + "</span>" +
-"<br><button class='delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
+"<br><br>" +
+"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
+"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>in_progress</button>" +
+"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
+"<button class='delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
 "</div>"
 ).join("");
 });
@@ -157,6 +169,22 @@ status: status
 .then(response => response.json())
 .then(() => {
 document.getElementById("title").value = "";
+loadTasks();
+});
+}
+
+function updateStatus(id, status) {
+fetch("/tasks/" + id + "/status", {
+method: "PATCH",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+status: status
+})
+})
+.then(response => response.json())
+.then(() => {
 loadTasks();
 });
 }
@@ -203,6 +231,11 @@ loadTasks();
 			input.Status = "todo"
 		}
 
+		if !isValidStatus(input.Status) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный статус"})
+			return
+		}
+
 		task := Task{
 			ID:     nextID,
 			Title:  input.Title,
@@ -215,6 +248,39 @@ loadTasks();
 		saveTasks()
 
 		c.JSON(http.StatusCreated, task)
+	})
+
+	router.PATCH("/tasks/:id/status", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+			return
+		}
+
+		var input struct {
+			Status string `json:"status"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный JSON"})
+			return
+		}
+
+		if !isValidStatus(input.Status) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный статус"})
+			return
+		}
+
+		for i := range tasks {
+			if tasks[i].ID == id {
+				tasks[i].Status = input.Status
+				saveTasks()
+				c.JSON(http.StatusOK, tasks[i])
+				return
+			}
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "Задача не найдена"})
 	})
 
 	router.DELETE("/tasks/:id", func(c *gin.Context) {
@@ -244,9 +310,10 @@ func loadTasks() {
 	if err != nil {
 		tasks = []Task{
 			{ID: 1, Title: "Создать первый мини-проект", Status: "done"},
-			{ID: 2, Title: "Добавить сохранение в JSON", Status: "todo"},
+			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done"},
+			{ID: 3, Title: "Добавить смену статуса", Status: "todo"},
 		}
-		nextID = 3
+		nextID = 4
 		saveTasks()
 		return
 	}
@@ -267,10 +334,16 @@ func loadTasks() {
 }
 
 func saveTasks() {
+	os.MkdirAll("data", 0755)
+
 	data, err := json.MarshalIndent(tasks, "", "  ")
 	if err != nil {
 		return
 	}
 
 	os.WriteFile(tasksFile, data, 0644)
+}
+
+func isValidStatus(status string) bool {
+	return status == "todo" || status == "in_progress" || status == "done"
 }
