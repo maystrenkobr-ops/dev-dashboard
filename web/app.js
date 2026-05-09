@@ -24,6 +24,7 @@ column.innerHTML = filtered.map(task =>
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>progress</button>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
+"<button class='small-btn' onclick='editTask(" + task.id + ", \"" + escapeJs(task.title) + "\")'>Изменить</button>" +
 "<button class='small-btn delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
 "</div>" +
 "</div>"
@@ -55,6 +56,33 @@ status: status
 .then(response => response.json())
 .then(() => {
 titleInput.value = "";
+loadTasks();
+});
+}
+
+function editTask(id, currentTitle) {
+const newTitle = prompt("Новое название задачи:", currentTitle);
+
+if (newTitle === null) {
+return;
+}
+
+if (newTitle.trim() === "") {
+alert("Название задачи не может быть пустым");
+return;
+}
+
+fetch("/tasks/" + id + "/title", {
+method: "PATCH",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+title: newTitle
+})
+})
+.then(response => response.json())
+.then(() => {
 loadTasks();
 });
 }
@@ -92,6 +120,13 @@ return text
 .replaceAll(">", "&gt;")
 .replaceAll('"', "&quot;")
 .replaceAll("'", "&#039;");
+}
+
+function escapeJs(text) {
+return text
+.replaceAll("\\", "\\\\")
+.replaceAll('"', '\\"')
+.replaceAll("'", "\\'");
 }
 
 loadTasks();

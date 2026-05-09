@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,12 +43,14 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
+			c.JSON(400, gin.H{"error": "Неверный JSON"})
 			return
 		}
 
+		input.Title = strings.TrimSpace(input.Title)
+
 		if input.Title == "" {
-			c.JSON(400, gin.H{"error": "РќР°Р·РІР°РЅРёРµ Р·Р°РґР°С‡Рё РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ"})
+			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
 			return
 		}
 
@@ -56,7 +59,7 @@ func main() {
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
+			c.JSON(400, gin.H{"error": "Некорректный статус"})
 			return
 		}
 
@@ -74,10 +77,45 @@ func main() {
 		c.JSON(201, task)
 	})
 
+	router.PATCH("/tasks/:id/title", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			return
+		}
+
+		var input struct {
+			Title string `json:"title"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			return
+		}
+
+		input.Title = strings.TrimSpace(input.Title)
+
+		if input.Title == "" {
+			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
+			return
+		}
+
+		for i := range tasks {
+			if tasks[i].ID == id {
+				tasks[i].Title = input.Title
+				saveTasks()
+				c.JSON(200, tasks[i])
+				return
+			}
+		}
+
+		c.JSON(404, gin.H{"error": "Задача не найдена"})
+	})
+
 	router.PATCH("/tasks/:id/status", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
+			c.JSON(400, gin.H{"error": "Некорректный ID"})
 			return
 		}
 
@@ -86,12 +124,12 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
+			c.JSON(400, gin.H{"error": "Неверный JSON"})
 			return
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
+			c.JSON(400, gin.H{"error": "Некорректный статус"})
 			return
 		}
 
@@ -104,13 +142,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
+		c.JSON(404, gin.H{"error": "Задача не найдена"})
 	})
 
 	router.DELETE("/tasks/:id", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
+			c.JSON(400, gin.H{"error": "Некорректный ID"})
 			return
 		}
 
@@ -118,12 +156,12 @@ func main() {
 			if task.ID == id {
 				tasks = append(tasks[:i], tasks[i+1:]...)
 				saveTasks()
-				c.JSON(200, gin.H{"message": "Р—Р°РґР°С‡Р° СѓРґР°Р»РµРЅР°"})
+				c.JSON(200, gin.H{"message": "Задача удалена"})
 				return
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
+		c.JSON(404, gin.H{"error": "Задача не найдена"})
 	})
 
 	router.Run(":8080")
@@ -133,9 +171,9 @@ func loadTasks() {
 	data, err := os.ReadFile(tasksFile)
 	if err != nil {
 		tasks = []Task{
-			{ID: 1, Title: "РЎРѕР·РґР°С‚СЊ РїРµСЂРІС‹Р№ РјРёРЅРё-РїСЂРѕРµРєС‚", Status: "done"},
-			{ID: 2, Title: "Р”РѕР±Р°РІРёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ РІ JSON", Status: "done"},
-			{ID: 3, Title: "Р’С‹РЅРµСЃС‚Рё HTML РІ РѕС‚РґРµР»СЊРЅС‹Р№ С„Р°Р№Р»", Status: "todo"},
+			{ID: 1, Title: "Создать первый мини-проект", Status: "done"},
+			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done"},
+			{ID: 3, Title: "Добавить редактирование задач", Status: "todo"},
 		}
 		nextID = 4
 		saveTasks()
