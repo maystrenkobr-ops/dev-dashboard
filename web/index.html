@@ -30,6 +30,10 @@
 <button onclick="createTask()">Добавить</button>
 </div>
 
+<div class="search-panel">
+<input id="search" class="search-input" placeholder="Поиск задачи..." oninput="renderTasks()" />
+</div>
+
 <div class="board">
 <div class="column">
 <h2>TODO <span class="counter" id="todo-count"></span></h2>

@@ -1,13 +1,27 @@
 ﻿const statuses = ["todo", "in_progress", "done"];
+let allTasks = [];
 
 function loadTasks() {
 fetch("/tasks")
 .then(response => response.json())
 .then(tasks => {
+allTasks = tasks;
+renderTasks();
+});
+}
+
+function renderTasks() {
+const searchInput = document.getElementById("search");
+const searchText = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+const visibleTasks = allTasks.filter(task =>
+task.title.toLowerCase().includes(searchText)
+);
+
 statuses.forEach(status => {
 const column = document.getElementById(status);
 const count = document.getElementById(status + "-count");
-const filtered = tasks.filter(task => task.status === status);
+const filtered = visibleTasks.filter(task => task.status === status);
 
 count.innerText = "(" + filtered.length + ")";
 
@@ -33,7 +47,6 @@ column.innerHTML = filtered.map(task =>
 "</div>" +
 "</div>"
 ).join("");
-});
 });
 }
 

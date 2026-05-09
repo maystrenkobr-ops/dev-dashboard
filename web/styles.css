@@ -186,3 +186,16 @@ input {
 width: 100%;
 }
 }
+
+.search-panel {
+background: #1e293b;
+padding: 18px;
+border-radius: 16px;
+margin-bottom: 20px;
+}
+
+.search-input {
+width: 100%;
+background: #334155;
+color: white;
+}
