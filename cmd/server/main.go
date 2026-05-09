@@ -33,55 +33,143 @@ func main() {
 <meta charset="UTF-8">
 <title>Dev Dashboard</title>
 <style>
-body {
-font-family: Arial, sans-serif;
-background: #111827;
-color: #f9fafb;
-padding: 40px;
+* {
+box-sizing: border-box;
 }
 
-.card {
-background: #1f2937;
-padding: 20px;
-border-radius: 12px;
-max-width: 820px;
+body {
+font-family: Arial, sans-serif;
+background: #0f172a;
+color: #f9fafb;
+padding: 40px;
+margin: 0;
+}
+
+.app {
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.header {
+background: #1e293b;
+padding: 24px;
+border-radius: 16px;
+margin-bottom: 20px;
 }
 
 h1 {
-margin-top: 0;
+margin: 0 0 10px 0;
+font-size: 34px;
 }
 
-.task {
-padding: 12px;
-margin: 10px 0;
-background: #374151;
-border-radius: 8px;
+.subtitle {
+color: #cbd5e1;
+margin: 0;
 }
 
-.status {
-color: #93c5fd;
-font-weight: bold;
+.form {
+background: #1e293b;
+padding: 18px;
+border-radius: 16px;
+margin-bottom: 20px;
+display: flex;
+gap: 10px;
+flex-wrap: wrap;
+align-items: center;
 }
 
 input, select, button {
-padding: 10px;
-margin: 6px 4px 12px 0;
-border-radius: 8px;
+padding: 12px;
+border-radius: 10px;
 border: none;
+font-size: 14px;
 }
 
 input {
-width: 300px;
+width: 360px;
+background: #334155;
+color: white;
+}
+
+input::placeholder {
+color: #94a3b8;
+}
+
+select {
+background: #334155;
+color: white;
 }
 
 button {
 cursor: pointer;
 background: #2563eb;
 color: white;
+font-weight: bold;
 }
 
 button:hover {
 background: #1d4ed8;
+}
+
+.board {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 16px;
+}
+
+.column {
+background: #1e293b;
+border-radius: 16px;
+padding: 16px;
+min-height: 420px;
+}
+
+.column h2 {
+margin: 0 0 14px 0;
+font-size: 18px;
+color: #e2e8f0;
+}
+
+.counter {
+color: #94a3b8;
+font-size: 14px;
+font-weight: normal;
+}
+
+.task {
+background: #334155;
+padding: 14px;
+border-radius: 12px;
+margin-bottom: 12px;
+}
+
+.task-title {
+font-size: 16px;
+font-weight: bold;
+margin-bottom: 8px;
+}
+
+.task-id {
+color: #93c5fd;
+font-size: 13px;
+margin-bottom: 10px;
+}
+
+.actions {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+margin-top: 10px;
+}
+
+.small-btn {
+font-size: 12px;
+padding: 8px;
+background: #475569;
+}
+
+.small-btn:hover {
+background: #64748b;
 }
 
 .delete-btn {
@@ -92,20 +180,33 @@ background: #dc2626;
 background: #b91c1c;
 }
 
-.status-btn {
-background: #4b5563;
+.empty {
+color: #94a3b8;
+font-size: 14px;
+padding: 10px;
+border: 1px dashed #475569;
+border-radius: 10px;
 }
 
-.status-btn:hover {
-background: #6b7280;
+@media (max-width: 900px) {
+.board {
+grid-template-columns: 1fr;
+}
+
+input {
+width: 100%;
+}
 }
 </style>
 </head>
 <body>
-<div class="card">
+<div class="app">
+<div class="header">
 <h1>Dev Dashboard</h1>
-<p>Задачи сохраняются в файл <b>data/tasks.json</b>.</p>
+<p class="subtitle">Мини-доска задач на Go + Gin + JSON.</p>
+</div>
 
+<div class="form">
 <input id="title" placeholder="Новая задача" />
 
 <select id="status">
@@ -115,40 +216,64 @@ background: #6b7280;
 </select>
 
 <button onclick="createTask()">Добавить</button>
+</div>
 
-<hr>
+<div class="board">
+<div class="column">
+<h2>TODO <span class="counter" id="todo-count"></span></h2>
+<div id="todo"></div>
+</div>
 
-<div id="tasks"></div>
+<div class="column">
+<h2>IN PROGRESS <span class="counter" id="in_progress-count"></span></h2>
+<div id="in_progress"></div>
+</div>
+
+<div class="column">
+<h2>DONE <span class="counter" id="done-count"></span></h2>
+<div id="done"></div>
+</div>
+</div>
 </div>
 
 <script>
+const statuses = ["todo", "in_progress", "done"];
+
 function loadTasks() {
 fetch("/tasks")
 .then(response => response.json())
 .then(tasks => {
-const container = document.getElementById("tasks");
+statuses.forEach(status => {
+const column = document.getElementById(status);
+const count = document.getElementById(status + "-count");
+const filtered = tasks.filter(task => task.status === status);
 
-if (tasks.length === 0) {
-container.innerHTML = "<p>Задач пока нет.</p>";
+count.innerText = "(" + filtered.length + ")";
+
+if (filtered.length === 0) {
+column.innerHTML = "<div class='empty'>Пока пусто</div>";
 return;
 }
 
-container.innerHTML = tasks.map(task =>
+column.innerHTML = filtered.map(task =>
 "<div class='task'>" +
-"<b>#" + task.id + "</b> " + task.title +
-"<br><span class='status'>Статус: " + task.status + "</span>" +
-"<br><br>" +
-"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
-"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>in_progress</button>" +
-"<button class='status-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
-"<button class='delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
+"<div class='task-id'>#" + task.id + "</div>" +
+"<div class='task-title'>" + escapeHtml(task.title) + "</div>" +
+"<div class='actions'>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>progress</button>" +
+"<button class='small-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
+"<button class='small-btn delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
+"</div>" +
 "</div>"
 ).join("");
+});
 });
 }
 
 function createTask() {
-const title = document.getElementById("title").value;
+const titleInput = document.getElementById("title");
+const title = titleInput.value;
 const status = document.getElementById("status").value;
 
 if (title.trim() === "") {
@@ -168,7 +293,7 @@ status: status
 })
 .then(response => response.json())
 .then(() => {
-document.getElementById("title").value = "";
+titleInput.value = "";
 loadTasks();
 });
 }
@@ -197,6 +322,15 @@ method: "DELETE"
 .then(() => {
 loadTasks();
 });
+}
+
+function escapeHtml(text) {
+return text
+.replaceAll("&", "&amp;")
+.replaceAll("<", "&lt;")
+.replaceAll(">", "&gt;")
+.replaceAll('"', "&quot;")
+.replaceAll("'", "&#039;");
 }
 
 loadTasks();
@@ -311,7 +445,7 @@ func loadTasks() {
 		tasks = []Task{
 			{ID: 1, Title: "Создать первый мини-проект", Status: "done"},
 			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done"},
-			{ID: 3, Title: "Добавить смену статуса", Status: "todo"},
+			{ID: 3, Title: "Добавить доску задач", Status: "todo"},
 		}
 		nextID = 4
 		saveTasks()

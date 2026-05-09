@@ -8,5 +8,10 @@
     "id": 2,
     "title": "Добавить сохранение в JSON",
     "status": "todo"
+  },
+  {
+    "id": 3,
+    "title": "работа в гпт ",
+    "status": "in_progress"
   }
 ]
