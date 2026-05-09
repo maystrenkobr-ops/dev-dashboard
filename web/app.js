@@ -20,10 +20,14 @@ column.innerHTML = filtered.map(task =>
 "<div class='task'>" +
 "<div class='task-id'>#" + task.id + "</div>" +
 "<div class='task-title'>" + escapeHtml(task.title) + "</div>" +
+"<div class='priority priority-" + task.priority + "'>" + task.priority + "</div>" +
 "<div class='actions'>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>progress</button>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"done\")'>done</button>" +
+"<button class='small-btn' onclick='updatePriority(" + task.id + ", \"low\")'>low</button>" +
+"<button class='small-btn' onclick='updatePriority(" + task.id + ", \"medium\")'>medium</button>" +
+"<button class='small-btn' onclick='updatePriority(" + task.id + ", \"high\")'>high</button>" +
 "<button class='small-btn' onclick='editTask(" + task.id + ", \"" + escapeJs(task.title) + "\")'>Изменить</button>" +
 "<button class='small-btn delete-btn' onclick='deleteTask(" + task.id + ")'>Удалить</button>" +
 "</div>" +
@@ -37,6 +41,7 @@ function createTask() {
 const titleInput = document.getElementById("title");
 const title = titleInput.value;
 const status = document.getElementById("status").value;
+const priority = document.getElementById("priority").value;
 
 if (title.trim() === "") {
 alert("Введите название задачи");
@@ -50,7 +55,8 @@ headers: {
 },
 body: JSON.stringify({
 title: title,
-status: status
+status: status,
+priority: priority
 })
 })
 .then(response => response.json())
@@ -95,6 +101,22 @@ headers: {
 },
 body: JSON.stringify({
 status: status
+})
+})
+.then(response => response.json())
+.then(() => {
+loadTasks();
+});
+}
+
+function updatePriority(id, priority) {
+fetch("/tasks/" + id + "/priority", {
+method: "PATCH",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+priority: priority
 })
 })
 .then(response => response.json())

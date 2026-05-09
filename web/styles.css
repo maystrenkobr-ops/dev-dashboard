@@ -120,6 +120,30 @@ font-size: 13px;
 margin-bottom: 10px;
 }
 
+.priority {
+display: inline-block;
+padding: 5px 8px;
+border-radius: 999px;
+font-size: 12px;
+font-weight: bold;
+margin-bottom: 10px;
+}
+
+.priority-low {
+background: #14532d;
+color: #bbf7d0;
+}
+
+.priority-medium {
+background: #78350f;
+color: #fde68a;
+}
+
+.priority-high {
+background: #7f1d1d;
+color: #fecaca;
+}
+
 .actions {
 display: flex;
 gap: 6px;
