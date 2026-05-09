@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,7 @@ type Task struct {
 	Title    string `json:"title"`
 	Status   string `json:"status"`
 	Priority string `json:"priority"`
+	Deadline string `json:"deadline"`
 }
 
 var tasks []Task
@@ -42,6 +44,7 @@ func main() {
 			Title    string `json:"title"`
 			Status   string `json:"status"`
 			Priority string `json:"priority"`
+			Deadline string `json:"deadline"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
@@ -50,6 +53,7 @@ func main() {
 		}
 
 		input.Title = strings.TrimSpace(input.Title)
+		input.Deadline = strings.TrimSpace(input.Deadline)
 
 		if input.Title == "" {
 			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
@@ -74,11 +78,17 @@ func main() {
 			return
 		}
 
+		if !isValidDeadline(input.Deadline) {
+			c.JSON(400, gin.H{"error": "Некорректная дата. Используй формат YYYY-MM-DD"})
+			return
+		}
+
 		task := Task{
 			ID:       nextID,
 			Title:    input.Title,
 			Status:   input.Status,
 			Priority: input.Priority,
+			Deadline: input.Deadline,
 		}
 
 		nextID++
@@ -115,6 +125,41 @@ func main() {
 		for i := range tasks {
 			if tasks[i].ID == id {
 				tasks[i].Title = input.Title
+				saveTasks()
+				c.JSON(200, tasks[i])
+				return
+			}
+		}
+
+		c.JSON(404, gin.H{"error": "Задача не найдена"})
+	})
+
+	router.PATCH("/tasks/:id/deadline", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			return
+		}
+
+		var input struct {
+			Deadline string `json:"deadline"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			return
+		}
+
+		input.Deadline = strings.TrimSpace(input.Deadline)
+
+		if !isValidDeadline(input.Deadline) {
+			c.JSON(400, gin.H{"error": "Некорректная дата. Используй формат YYYY-MM-DD"})
+			return
+		}
+
+		for i := range tasks {
+			if tasks[i].ID == id {
+				tasks[i].Deadline = input.Deadline
 				saveTasks()
 				c.JSON(200, tasks[i])
 				return
@@ -216,9 +261,9 @@ func loadTasks() {
 	data, err := os.ReadFile(tasksFile)
 	if err != nil {
 		tasks = []Task{
-			{ID: 1, Title: "Создать первый мини-проект", Status: "done", Priority: "medium"},
-			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done", Priority: "high"},
-			{ID: 3, Title: "Добавить приоритет задач", Status: "todo", Priority: "high"},
+			{ID: 1, Title: "Создать первый мини-проект", Status: "done", Priority: "medium", Deadline: ""},
+			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done", Priority: "high", Deadline: ""},
+			{ID: 3, Title: "Добавить срок задачи", Status: "todo", Priority: "high", Deadline: ""},
 		}
 		nextID = 4
 		saveTasks()
@@ -267,4 +312,13 @@ func isValidStatus(status string) bool {
 
 func isValidPriority(priority string) bool {
 	return priority == "low" || priority == "medium" || priority == "high"
+}
+
+func isValidDeadline(deadline string) bool {
+	if deadline == "" {
+		return true
+	}
+
+	_, err := time.Parse("2006-01-02", deadline)
+	return err == nil
 }

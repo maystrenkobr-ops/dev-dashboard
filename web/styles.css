@@ -206,3 +206,25 @@ width: 220px;
 background: #334155;
 color: white;
 }
+
+.date-input {
+width: 170px;
+background: #334155;
+color: white;
+}
+
+.deadline {
+display: inline-block;
+padding: 5px 8px;
+border-radius: 999px;
+font-size: 12px;
+font-weight: bold;
+margin: 0 0 10px 8px;
+background: #1e40af;
+color: #dbeafe;
+}
+
+.deadline-empty {
+background: #334155;
+color: #94a3b8;
+}

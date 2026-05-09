@@ -3,24 +3,35 @@
     "id": 1,
     "title": "Создать первый мини-проект",
     "status": "done",
-    "priority": "medium"
+    "priority": "medium",
+    "deadline": ""
   },
   {
     "id": 2,
     "title": "Добавить сохранение в JSON",
     "status": "done",
-    "priority": "medium"
+    "priority": "medium",
+    "deadline": ""
   },
   {
     "id": 3,
     "title": "переписка с женей",
     "status": "done",
-    "priority": "low"
+    "priority": "low",
+    "deadline": ""
   },
   {
     "id": 4,
     "title": "погулять с Лизой",
     "status": "in_progress",
-    "priority": "high"
+    "priority": "high",
+    "deadline": ""
+  },
+  {
+    "id": 5,
+    "title": "проверка dl",
+    "status": "in_progress",
+    "priority": "high",
+    "deadline": "2026-05-09"
   }
 ]
