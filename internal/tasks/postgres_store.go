@@ -39,7 +39,7 @@ func (s *PostgresStore) Close() {
 
 func (s *PostgresStore) GetTasks(ctx context.Context) ([]Task, error) {
 	rows, err := s.db.Query(ctx, `
-SELECT id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI')
+SELECT id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI')
 FROM tasks
 ORDER BY id;
 `)
@@ -69,7 +69,7 @@ func (s *PostgresStore) CreateTask(ctx context.Context, input Task) (Task, error
 	err := s.db.QueryRow(ctx, `
 INSERT INTO tasks (title, status, priority, deadline)
 VALUES ($1, $2, $3, NULLIF($4, '')::date)
-RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI');
+RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI');
 `, input.Title, input.Status, input.Priority, input.Deadline).
 		Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.Deadline, &task.CreatedAt)
 
@@ -83,7 +83,7 @@ func (s *PostgresStore) UpdateTaskTitle(ctx context.Context, id int, title strin
 UPDATE tasks
 SET title = $1
 WHERE id = $2
-RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI');
+RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI');
 `, title, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.Deadline, &task.CreatedAt)
 
 	return scanTaskResult(task, err)
@@ -96,7 +96,7 @@ func (s *PostgresStore) UpdateTaskDeadline(ctx context.Context, id int, deadline
 UPDATE tasks
 SET deadline = NULLIF($1, '')::date
 WHERE id = $2
-RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI');
+RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI');
 `, deadline, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.Deadline, &task.CreatedAt)
 
 	return scanTaskResult(task, err)
@@ -109,7 +109,7 @@ func (s *PostgresStore) UpdateTaskStatus(ctx context.Context, id int, status str
 UPDATE tasks
 SET status = $1
 WHERE id = $2
-RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI');
+RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI');
 `, status, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.Deadline, &task.CreatedAt)
 
 	return scanTaskResult(task, err)
@@ -122,7 +122,7 @@ func (s *PostgresStore) UpdateTaskPriority(ctx context.Context, id int, priority
 UPDATE tasks
 SET priority = $1
 WHERE id = $2
-RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at, 'YYYY-MM-DD HH24:MI');
+RETURNING id, title, status, priority, COALESCE(deadline::text, ''), to_char(created_at AT TIME ZONE 'Europe/Moscow', 'YYYY-MM-DD HH24:MI');
 `, priority, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.Deadline, &task.CreatedAt)
 
 	return scanTaskResult(task, err)
@@ -172,9 +172,9 @@ func (s *PostgresStore) seedTasksIfEmpty(ctx context.Context) error {
 	_, err := s.db.Exec(ctx, `
 INSERT INTO tasks (title, status, priority, deadline)
 VALUES
-('Создать первый мини-проект', 'done', 'medium', NULL),
-('Подключить PostgreSQL', 'done', 'high', NULL),
-('Добавить дату создания задачи', 'todo', 'high', NULL);
+('РЎРѕР·РґР°С‚СЊ РїРµСЂРІС‹Р№ РјРёРЅРё-РїСЂРѕРµРєС‚', 'done', 'medium', NULL),
+('РџРѕРґРєР»СЋС‡РёС‚СЊ PostgreSQL', 'done', 'high', NULL),
+('Р”РѕР±Р°РІРёС‚СЊ РґР°С‚Сѓ СЃРѕР·РґР°РЅРёСЏ Р·Р°РґР°С‡Рё', 'todo', 'high', NULL);
 `)
 
 	return err
