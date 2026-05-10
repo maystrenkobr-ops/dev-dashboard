@@ -238,3 +238,15 @@ box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
 border: 2px solid #facc15;
 box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.25);
 }
+
+.task-overdue {
+border: 2px solid #ef4444 !important;
+border-left: 8px solid #ef4444 !important;
+background: #3f2630 !important;
+}
+
+.task-today {
+border: 2px solid #facc15 !important;
+border-left: 8px solid #facc15 !important;
+background: #3f3520 !important;
+}
