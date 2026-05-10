@@ -1,5 +1,6 @@
 ﻿const statuses = ["todo", "in_progress", "done"];
 let allTasks = [];
+let draggedTaskId = null;
 
 function loadTasks() {
 fetch("/tasks")
@@ -32,7 +33,7 @@ const filtered = visibleTasks.filter(task => task.status === status);
 count.innerText = "(" + filtered.length + ")";
 
 if (filtered.length === 0) {
-column.innerHTML = "<div class='empty'>Пока пусто</div>";
+column.innerHTML = "<div class='empty'>Перетащи задачу сюда</div>";
 return;
 }
 
@@ -42,7 +43,7 @@ const deadlineHtml = task.deadline
 ? "<div class='deadline'>Срок: " + escapeHtml(task.deadline) + "</div>"
 : "<div class='deadline deadline-empty'>Без срока</div>";
 
-return "<div class='task " + deadlineClass + "'>" +
+return "<div class='task " + deadlineClass + "' draggable='true' ondragstart='handleDragStart(event, " + task.id + ")' ondragend='handleDragEnd(event)'>" +
 "<div class='task-id'>#" + task.id + "</div>" +
 "<div class='task-title'>" + escapeHtml(task.title) + "</div>" +
 "<div class='priority priority-" + task.priority + "'>" + task.priority + "</div>" +
@@ -60,6 +61,53 @@ deadlineHtml +
 "</div>" +
 "</div>";
 }).join("");
+});
+}
+
+function setupDragAndDrop() {
+statuses.forEach(status => {
+const taskList = document.getElementById(status);
+
+taskList.addEventListener("dragover", event => {
+event.preventDefault();
+taskList.classList.add("drag-over");
+});
+
+taskList.addEventListener("dragleave", () => {
+taskList.classList.remove("drag-over");
+});
+
+taskList.addEventListener("drop", event => {
+event.preventDefault();
+taskList.classList.remove("drag-over");
+
+if (!draggedTaskId) {
+return;
+}
+
+const task = allTasks.find(item => item.id === draggedTaskId);
+
+if (!task || task.status === status) {
+return;
+}
+
+updateStatus(draggedTaskId, status);
+});
+});
+}
+
+function handleDragStart(event, id) {
+draggedTaskId = id;
+event.currentTarget.classList.add("dragging");
+event.dataTransfer.effectAllowed = "move";
+}
+
+function handleDragEnd(event) {
+event.currentTarget.classList.remove("dragging");
+draggedTaskId = null;
+
+statuses.forEach(status => {
+document.getElementById(status).classList.remove("drag-over");
 });
 }
 
@@ -230,4 +278,5 @@ return text
 .replaceAll("'", "\\'");
 }
 
+setupDragAndDrop();
 loadTasks();

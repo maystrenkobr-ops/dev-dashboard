@@ -250,3 +250,31 @@ border: 2px solid #facc15 !important;
 border-left: 8px solid #facc15 !important;
 background: #3f3520 !important;
 }
+
+.task {
+cursor: grab;
+transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.task:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.task.dragging {
+opacity: 0.45;
+cursor: grabbing;
+}
+
+#todo,
+#in_progress,
+#done {
+min-height: 320px;
+border-radius: 12px;
+transition: background 0.15s ease, outline 0.15s ease;
+}
+
+.drag-over {
+outline: 2px dashed #60a5fa;
+background: rgba(96, 165, 250, 0.08);
+}
