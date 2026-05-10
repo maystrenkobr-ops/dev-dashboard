@@ -40,9 +40,10 @@ return;
 
 column.innerHTML = filtered.map(task => {
 const deadlineClass = getDeadlineClass(task);
+
 const createdAtHtml = task.created_at
 ? "<div class='created-at'>Создано: " + escapeHtml(task.created_at) + "</div>"
-: "";
+: "<div class='created-at'>Создано: неизвестно</div>";
 
 const deadlineHtml = task.deadline
 ? "<div class='deadline'>Срок: " + escapeHtml(task.deadline) + "</div>"
@@ -52,7 +53,8 @@ return "<div class='task " + deadlineClass + "' draggable='true' ondragstart='ha
 "<div class='task-id'>#" + task.id + "</div>" +
 "<div class='task-title'>" + escapeHtml(task.title) + "</div>" +
 "<div class='priority priority-" + task.priority + "'>" + task.priority + "</div>" +
-createdAtHtml + deadlineHtml +
+createdAtHtml +
+deadlineHtml +
 "<div class='actions'>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"todo\")'>todo</button>" +
 "<button class='small-btn' onclick='updateStatus(" + task.id + ", \"in_progress\")'>progress</button>" +
@@ -267,22 +269,6 @@ loadTasks();
 });
 }
 
-function escapeHtml(text) {
-return text
-.replaceAll("&", "&amp;")
-.replaceAll("<", "&lt;")
-.replaceAll(">", "&gt;")
-.replaceAll('"', "&quot;")
-.replaceAll("'", "&#039;");
-}
-
-function escapeJs(text) {
-return text
-.replaceAll("\\", "\\\\")
-.replaceAll('"', '\\"')
-.replaceAll("'", "\\'");
-}
-
 function loadCurrentUser() {
 fetch("/api/me")
 .then(response => {
@@ -329,7 +315,21 @@ window.location.href = "/login";
 });
 }
 
+function escapeHtml(text) {
+return String(text || "")
+.replaceAll("&", "&amp;")
+.replaceAll("<", "&lt;")
+.replaceAll(">", "&gt;")
+.replaceAll('"', "&quot;")
+.replaceAll("'", "&#039;");
+}
+
+function escapeJs(text) {
+return String(text || "")
+.replaceAll("\\", "\\\\")
+.replaceAll('"', '\\"')
+.replaceAll("'", "\\'");
+}
+
 setupDragAndDrop();
 loadCurrentUser();
-
-

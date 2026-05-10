@@ -391,3 +391,15 @@ background: #0f172a;
 color: #cbd5e1;
 border: 1px solid #475569;
 }
+
+.created-at {
+display: inline-block;
+padding: 5px 8px;
+border-radius: 999px;
+font-size: 12px;
+font-weight: bold;
+margin: 0 8px 10px 0;
+background: #0f172a;
+color: #cbd5e1;
+border: 1px solid #475569;
+}
