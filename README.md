@@ -29,6 +29,10 @@ Dev Dashboard — это Kanban-доска задач на Go + Gin с веб-и
 - drag-and-drop карточек между колонками
 - подсветка просроченных дедлайнов
 - PostgreSQL-хранилище на Render
+- регистрация и вход пользователей
+- bcrypt-хеширование паролей
+- cookie-сессии
+- admin-панель для управления пользователями
 - локальный fallback через data/tasks.json
 
 ## Стек
@@ -37,6 +41,7 @@ Dev Dashboard — это Kanban-доска задач на Go + Gin с веб-и
 - Gin
 - PostgreSQL
 - pgx / pgxpool
+- bcrypt
 - HTML
 - CSS
 - JavaScript
@@ -107,5 +112,6 @@ Start Command:
 - Dockerfile
 - тесты
 - отдельная backend-структура по слоям
+
 
 
