@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Вход — Dev Dashboard</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="auth-page">
+<div class="auth-card">
+<h1>Вход</h1>
+<p>Войди, чтобы открыть Dev Dashboard.</p>
+
+<input id="username" placeholder="Логин" autocomplete="username" />
+<input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
+
+<button onclick="login()">Войти</button>
+
+<p class="auth-link">
+Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+</p>
+
+<p id="error" class="auth-error"></p>
+</div>
+</div>
+
+<script>
+function login() {
+const username = document.getElementById("username").value;
+const password = document.getElementById("password").value;
+const error = document.getElementById("error");
+
+error.innerText = "";
+
+fetch("/api/login", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+username: username,
+password: password
+})
+})
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+if (!result.ok) {
+error.innerText = result.data.error || "Ошибка входа";
+return;
+}
+
+window.location.href = "/";
+});
+}
+</script>
+</body>
+</html>

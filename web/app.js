@@ -1,4 +1,5 @@
 ﻿const statuses = ["todo", "in_progress", "done"];
+let currentUser = null;
 let allTasks = [];
 let draggedTaskId = null;
 
@@ -278,5 +279,52 @@ return text
 .replaceAll("'", "\\'");
 }
 
-setupDragAndDrop();
+function loadCurrentUser() {
+fetch("/api/me")
+.then(response => {
+if (response.status === 401) {
+window.location.href = "/login";
+return null;
+}
+
+return response.json();
+})
+.then(user => {
+if (!user) {
+return;
+}
+
+currentUser = user;
+renderUserPanel();
 loadTasks();
+});
+}
+
+function renderUserPanel() {
+const panel = document.getElementById("user-panel");
+
+if (!panel || !currentUser) {
+return;
+}
+
+const adminLink = currentUser.role === "admin"
+? "<a class='panel-link' href='/admin/users'>Пользователи</a>"
+: "";
+
+panel.innerHTML =
+"<span class='user-name'>" + escapeHtml(currentUser.username) + " · " + escapeHtml(currentUser.role) + "</span>" +
+adminLink +
+"<button onclick='logout()'>Выйти</button>";
+}
+
+function logout() {
+fetch("/api/logout", {
+method: "POST"
+}).then(() => {
+window.location.href = "/login";
+});
+}
+
+setupDragAndDrop();
+loadCurrentUser();
+

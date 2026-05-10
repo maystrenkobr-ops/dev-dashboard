@@ -278,3 +278,104 @@ transition: background 0.15s ease, outline 0.15s ease;
 outline: 2px dashed #60a5fa;
 background: rgba(96, 165, 250, 0.08);
 }
+
+.header-top {
+display: flex;
+justify-content: space-between;
+gap: 16px;
+align-items: flex-start;
+}
+
+.user-panel {
+display: flex;
+align-items: center;
+gap: 10px;
+flex-wrap: wrap;
+justify-content: flex-end;
+}
+
+.user-name {
+color: #cbd5e1;
+font-size: 14px;
+}
+
+.panel-link {
+color: #93c5fd;
+text-decoration: none;
+font-weight: bold;
+}
+
+.panel-link:hover {
+text-decoration: underline;
+}
+
+.auth-page {
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px;
+}
+
+.auth-card {
+width: 100%;
+max-width: 420px;
+background: #1e293b;
+border-radius: 18px;
+padding: 28px;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h1 {
+margin-bottom: 8px;
+}
+
+.auth-card p {
+color: #cbd5e1;
+}
+
+.auth-card input {
+width: 100%;
+margin-bottom: 12px;
+}
+
+.auth-card button {
+width: 100%;
+margin-top: 4px;
+}
+
+.auth-link {
+margin-top: 16px;
+text-align: center;
+}
+
+.auth-link a {
+color: #93c5fd;
+}
+
+.auth-error {
+color: #fecaca !important;
+font-weight: bold;
+}
+
+.admin-card {
+background: #1e293b;
+padding: 20px;
+border-radius: 16px;
+}
+
+.user-row {
+display: flex;
+justify-content: space-between;
+gap: 16px;
+align-items: center;
+padding: 14px;
+background: #334155;
+border-radius: 12px;
+margin-bottom: 12px;
+}
+
+.user-row span {
+color: #cbd5e1;
+font-size: 13px;
+}

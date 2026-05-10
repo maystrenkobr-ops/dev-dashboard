@@ -12,16 +12,16 @@ type Handler struct {
 	store Store
 }
 
-func RegisterRoutes(router *gin.Engine, store Store) {
+func RegisterRoutes(router gin.IRoutes, store Store) {
 	handler := &Handler{store: store}
 
-	router.GET("/tasks", handler.getTasks)
-	router.POST("/tasks", handler.createTask)
-	router.PATCH("/tasks/:id/title", handler.updateTaskTitle)
-	router.PATCH("/tasks/:id/deadline", handler.updateTaskDeadline)
-	router.PATCH("/tasks/:id/status", handler.updateTaskStatus)
-	router.PATCH("/tasks/:id/priority", handler.updateTaskPriority)
-	router.DELETE("/tasks/:id", handler.deleteTask)
+	router.GET("", handler.getTasks)
+	router.POST("", handler.createTask)
+	router.PATCH("/:id/title", handler.updateTaskTitle)
+	router.PATCH("/:id/deadline", handler.updateTaskDeadline)
+	router.PATCH("/:id/status", handler.updateTaskStatus)
+	router.PATCH("/:id/priority", handler.updateTaskPriority)
+	router.DELETE("/:id", handler.deleteTask)
 }
 
 func (h *Handler) getTasks(c *gin.Context) {

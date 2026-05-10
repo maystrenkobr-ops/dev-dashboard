@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Регистрация — Dev Dashboard</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="auth-page">
+<div class="auth-card">
+<h1>Регистрация</h1>
+<p>Создай аккаунт для доступа к dashboard.</p>
+
+<input id="username" placeholder="Логин" autocomplete="username" />
+<input id="password" type="password" placeholder="Пароль" autocomplete="new-password" />
+
+<button onclick="register()">Зарегистрироваться</button>
+
+<p class="auth-link">
+Уже есть аккаунт? <a href="/login">Войти</a>
+</p>
+
+<p id="error" class="auth-error"></p>
+</div>
+</div>
+
+<script>
+function register() {
+const username = document.getElementById("username").value;
+const password = document.getElementById("password").value;
+const error = document.getElementById("error");
+
+error.innerText = "";
+
+fetch("/api/register", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+username: username,
+password: password
+})
+})
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+if (!result.ok) {
+error.innerText = result.data.error || "Ошибка регистрации";
+return;
+}
+
+window.location.href = "/";
+});
+}
+</script>
+</body>
+</html>
