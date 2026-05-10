@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
 
 type JSONStore struct {
@@ -42,11 +43,12 @@ func (s *JSONStore) CreateTask(ctx context.Context, input Task) (Task, error) {
 	defer s.mu.Unlock()
 
 	task := Task{
-		ID:       s.nextID,
-		Title:    input.Title,
-		Status:   input.Status,
-		Priority: input.Priority,
-		Deadline: input.Deadline,
+		ID:        s.nextID,
+		Title:     input.Title,
+		Status:    input.Status,
+		Priority:  input.Priority,
+		Deadline:  input.Deadline,
+		CreatedAt: time.Now().Format("2006-01-02 15:04"),
 	}
 
 	s.nextID++
@@ -126,12 +128,14 @@ func (s *JSONStore) DeleteTask(ctx context.Context, id int) (bool, error) {
 }
 
 func (s *JSONStore) load() {
+	now := time.Now().Format("2006-01-02 15:04")
+
 	data, err := os.ReadFile(s.file)
 	if err != nil {
 		s.tasks = []Task{
-			{ID: 1, Title: "Создать первый мини-проект", Status: "done", Priority: "medium", Deadline: ""},
-			{ID: 2, Title: "Добавить PostgreSQL", Status: "done", Priority: "high", Deadline: ""},
-			{ID: 3, Title: "Разнести backend-код по структуре", Status: "todo", Priority: "high", Deadline: ""},
+			{ID: 1, Title: "Создать первый мини-проект", Status: "done", Priority: "medium", Deadline: "", CreatedAt: now},
+			{ID: 2, Title: "Добавить PostgreSQL", Status: "done", Priority: "high", Deadline: "", CreatedAt: now},
+			{ID: 3, Title: "Добавить дату создания задачи", Status: "todo", Priority: "high", Deadline: "", CreatedAt: now},
 		}
 		s.nextID = 4
 		_ = s.saveLocked()
@@ -159,6 +163,11 @@ func (s *JSONStore) load() {
 
 		if s.tasks[i].Priority == "" {
 			s.tasks[i].Priority = "medium"
+			changed = true
+		}
+
+		if s.tasks[i].CreatedAt == "" {
+			s.tasks[i].CreatedAt = now
 			changed = true
 		}
 	}
