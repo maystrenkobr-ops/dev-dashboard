@@ -5,6 +5,10 @@
 Live demo: https://dev-dashboard-557n.onrender.com
 GitHub: https://github.com/maystrenkobr-ops/dev-dashboard
 
+## Скриншот
+
+![Dev Dashboard](docs/screenshot.png)
+
 ## Описание
 
 Dev Dashboard — это Kanban-доска задач на Go + Gin с веб-интерфейсом и хранением данных в PostgreSQL.
@@ -103,3 +107,4 @@ Start Command:
 - Dockerfile
 - тесты
 - отдельная backend-структура по слоям
+
