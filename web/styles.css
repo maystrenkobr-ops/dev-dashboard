@@ -228,3 +228,13 @@ color: #dbeafe;
 background: #334155;
 color: #94a3b8;
 }
+
+.task-overdue {
+border: 2px solid #ef4444;
+box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
+}
+
+.task-today {
+border: 2px solid #facc15;
+box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.25);
+}
