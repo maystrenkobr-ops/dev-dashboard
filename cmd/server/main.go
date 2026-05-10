@@ -48,7 +48,7 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
@@ -56,7 +56,7 @@ func main() {
 		input.Deadline = strings.TrimSpace(input.Deadline)
 
 		if input.Title == "" {
-			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
+			c.JSON(400, gin.H{"error": "РќР°Р·РІР°РЅРёРµ Р·Р°РґР°С‡Рё РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ"})
 			return
 		}
 
@@ -69,17 +69,17 @@ func main() {
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "Некорректный статус"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
 			return
 		}
 
 		if !isValidPriority(input.Priority) {
-			c.JSON(400, gin.H{"error": "Некорректный приоритет"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РїСЂРёРѕСЂРёС‚РµС‚"})
 			return
 		}
 
 		if !isValidDeadline(input.Deadline) {
-			c.JSON(400, gin.H{"error": "Некорректная дата. Используй формат YYYY-MM-DD"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РґР°С‚Р°. РСЃРїРѕР»СЊР·СѓР№ С„РѕСЂРјР°С‚ YYYY-MM-DD"})
 			return
 		}
 
@@ -102,7 +102,7 @@ func main() {
 	router.PATCH("/tasks/:id/title", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -111,14 +111,14 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		input.Title = strings.TrimSpace(input.Title)
 
 		if input.Title == "" {
-			c.JSON(400, gin.H{"error": "Название задачи обязательно"})
+			c.JSON(400, gin.H{"error": "РќР°Р·РІР°РЅРёРµ Р·Р°РґР°С‡Рё РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ"})
 			return
 		}
 
@@ -131,13 +131,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.PATCH("/tasks/:id/deadline", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -146,14 +146,14 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		input.Deadline = strings.TrimSpace(input.Deadline)
 
 		if !isValidDeadline(input.Deadline) {
-			c.JSON(400, gin.H{"error": "Некорректная дата. Используй формат YYYY-MM-DD"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РґР°С‚Р°. РСЃРїРѕР»СЊР·СѓР№ С„РѕСЂРјР°С‚ YYYY-MM-DD"})
 			return
 		}
 
@@ -166,13 +166,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.PATCH("/tasks/:id/status", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -181,12 +181,12 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		if !isValidStatus(input.Status) {
-			c.JSON(400, gin.H{"error": "Некорректный статус"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃС‚Р°С‚СѓСЃ"})
 			return
 		}
 
@@ -199,13 +199,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.PATCH("/tasks/:id/priority", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -214,12 +214,12 @@ func main() {
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": "Неверный JSON"})
+			c.JSON(400, gin.H{"error": "РќРµРІРµСЂРЅС‹Р№ JSON"})
 			return
 		}
 
 		if !isValidPriority(input.Priority) {
-			c.JSON(400, gin.H{"error": "Некорректный приоритет"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РїСЂРёРѕСЂРёС‚РµС‚"})
 			return
 		}
 
@@ -232,13 +232,13 @@ func main() {
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
 	router.DELETE("/tasks/:id", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			c.JSON(400, gin.H{"error": "Некорректный ID"})
+			c.JSON(400, gin.H{"error": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ ID"})
 			return
 		}
 
@@ -246,24 +246,29 @@ func main() {
 			if task.ID == id {
 				tasks = append(tasks[:i], tasks[i+1:]...)
 				saveTasks()
-				c.JSON(200, gin.H{"message": "Задача удалена"})
+				c.JSON(200, gin.H{"message": "Р—Р°РґР°С‡Р° СѓРґР°Р»РµРЅР°"})
 				return
 			}
 		}
 
-		c.JSON(404, gin.H{"error": "Задача не найдена"})
+		c.JSON(404, gin.H{"error": "Р—Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°"})
 	})
 
-	router.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	router.Run(":" + port)
 }
 
 func loadTasks() {
 	data, err := os.ReadFile(tasksFile)
 	if err != nil {
 		tasks = []Task{
-			{ID: 1, Title: "Создать первый мини-проект", Status: "done", Priority: "medium", Deadline: ""},
-			{ID: 2, Title: "Добавить сохранение в JSON", Status: "done", Priority: "high", Deadline: ""},
-			{ID: 3, Title: "Добавить срок задачи", Status: "todo", Priority: "high", Deadline: ""},
+			{ID: 1, Title: "РЎРѕР·РґР°С‚СЊ РїРµСЂРІС‹Р№ РјРёРЅРё-РїСЂРѕРµРєС‚", Status: "done", Priority: "medium", Deadline: ""},
+			{ID: 2, Title: "Р”РѕР±Р°РІРёС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ РІ JSON", Status: "done", Priority: "high", Deadline: ""},
+			{ID: 3, Title: "Р”РѕР±Р°РІРёС‚СЊ СЃСЂРѕРє Р·Р°РґР°С‡Рё", Status: "todo", Priority: "high", Deadline: ""},
 		}
 		nextID = 4
 		saveTasks()
