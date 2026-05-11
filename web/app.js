@@ -589,3 +589,4 @@ return String(text || "")
 
 setupDragAndDrop();
 loadCurrentUser();
+

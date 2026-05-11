@@ -545,3 +545,9 @@ margin-bottom: 10px;
 color: #cbd5e1;
 font-size: 13px;
 }
+
+.workspace-name-input {
+min-width: 220px;
+background: #334155;
+color: white;
+}
