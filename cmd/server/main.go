@@ -7,22 +7,30 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/maystrenkobr-ops/dev-dashboard/internal/auth"
 	"github.com/maystrenkobr-ops/dev-dashboard/internal/tasks"
+	"github.com/maystrenkobr-ops/dev-dashboard/internal/workspaces"
 )
 
 func main() {
 	ctx := context.Background()
+	databaseURL := os.Getenv("DATABASE_URL")
 
-	taskStore, err := tasks.NewStorage(ctx, os.Getenv("DATABASE_URL"), "data/tasks.json")
+	taskStore, err := tasks.NewStorage(ctx, databaseURL, "data/tasks.json")
 	if err != nil {
 		panic(err)
 	}
 	defer taskStore.Close()
 
-	authStore, err := auth.NewStorage(ctx, os.Getenv("DATABASE_URL"), os.Getenv("ADMIN_USERNAME"), os.Getenv("ADMIN_PASSWORD"))
+	authStore, err := auth.NewStorage(ctx, databaseURL, os.Getenv("ADMIN_USERNAME"), os.Getenv("ADMIN_PASSWORD"))
 	if err != nil {
 		panic(err)
 	}
 	defer authStore.Close()
+
+	workspaceStore, err := workspaces.NewStorage(ctx, databaseURL)
+	if err != nil {
+		panic(err)
+	}
+	defer workspaceStore.Close()
 
 	sessionManager := auth.NewSessionManager(os.Getenv("SESSION_SECRET"))
 
@@ -44,6 +52,10 @@ func main() {
 	taskRoutes := router.Group("/tasks")
 	taskRoutes.Use(sessionManager.RequireAuth(authStore))
 	tasks.RegisterRoutes(taskRoutes, taskStore)
+
+	apiRoutes := router.Group("/api")
+	apiRoutes.Use(sessionManager.RequireAuth(authStore))
+	workspaces.RegisterRoutes(apiRoutes, workspaceStore, authStore)
 
 	port := os.Getenv("PORT")
 	if port == "" {
