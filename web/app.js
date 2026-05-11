@@ -5,7 +5,6 @@ let workspaces = [];
 let selectedWorkspaceId = 0;
 let draggedTaskId = null;
 let membersPanelOpen = false;
-let canManageSelectedWorkspace = false;
 
 function loadCurrentUser() {
 fetch("/api/me")
@@ -45,15 +44,27 @@ selectedWorkspaceId = workspaces[0].id;
 
 renderWorkspacePanel();
 loadTasks();
-
-if (membersPanelOpen) {
-loadWorkspaceMembers();
-}
 });
+}
+
+function selectedWorkspace() {
+return workspaces.find(workspace => workspace.id === selectedWorkspaceId);
+}
+
+function canManageCurrentWorkspace() {
+const workspace = selectedWorkspace();
+
+if (!currentUser || !workspace) {
+return false;
+}
+
+return currentUser.role === "admin" || workspace.owner_id === currentUser.id;
 }
 
 function renderWorkspacePanel() {
 const select = document.getElementById("workspaceSelect");
+const membersButton = document.getElementById("membersButton");
+const membersPanel = document.getElementById("membersPanel");
 
 if (!select) {
 return;
@@ -64,15 +75,30 @@ select.innerHTML = workspaces.map(workspace =>
 ).join("");
 
 select.value = String(selectedWorkspaceId);
+
+if (membersButton) {
+if (canManageCurrentWorkspace()) {
+membersButton.classList.remove("hidden");
+} else {
+membersButton.classList.add("hidden");
+membersPanelOpen = false;
+
+if (membersPanel) {
+membersPanel.classList.add("hidden");
+}
+}
+}
 }
 
 function changeWorkspace() {
 const select = document.getElementById("workspaceSelect");
 selectedWorkspaceId = Number(select.value);
 localStorage.setItem("selected_workspace_id", String(selectedWorkspaceId));
+
+renderWorkspacePanel();
 loadTasks();
 
-if (membersPanelOpen) {
+if (membersPanelOpen && canManageCurrentWorkspace()) {
 loadWorkspaceMembers();
 }
 }
@@ -112,6 +138,11 @@ loadWorkspaces();
 }
 
 function toggleMembersPanel() {
+if (!canManageCurrentWorkspace()) {
+alert("Участников видит только владелец рабочей области или админ");
+return;
+}
+
 const panel = document.getElementById("membersPanel");
 
 if (!panel) {
@@ -129,7 +160,7 @@ panel.classList.add("hidden");
 }
 
 function loadWorkspaceMembers() {
-if (!selectedWorkspaceId) {
+if (!selectedWorkspaceId || !canManageCurrentWorkspace()) {
 return;
 }
 
@@ -144,34 +175,11 @@ return;
 
 if (!result.ok) {
 list.innerHTML = "<p class='auth-error'>" + escapeHtml(result.data.error || "Не удалось получить участников") + "</p>";
-canManageSelectedWorkspace = false;
-updateMembersControls();
 return;
 }
 
-const members = Array.isArray(result.data) ? result.data : [];
-
-canManageSelectedWorkspace = currentUser.role === "admin" || members.some(member =>
-member.user_id === currentUser.id && member.role === "owner"
-);
-
-updateMembersControls();
-renderMembers(members);
+renderMembers(Array.isArray(result.data) ? result.data : []);
 });
-}
-
-function updateMembersControls() {
-const addBlock = document.querySelector(".members-add");
-
-if (!addBlock) {
-return;
-}
-
-if (canManageSelectedWorkspace) {
-addBlock.classList.remove("hidden");
-} else {
-addBlock.classList.add("hidden");
-}
 }
 
 function renderMembers(members) {
@@ -187,9 +195,7 @@ return;
 }
 
 list.innerHTML = members.map(member => {
-const canDeleteThisMember = canManageSelectedWorkspace && member.user_id !== currentUser.id;
-
-const deleteButton = canDeleteThisMember
+const deleteButton = member.user_id !== currentUser.id
 ? "<button class='delete-btn' onclick='removeWorkspaceMember(" + member.user_id + ")'>Удалить</button>"
 : "";
 
@@ -205,7 +211,7 @@ deleteButton +
 }
 
 function addWorkspaceMember() {
-if (!canManageSelectedWorkspace) {
+if (!canManageCurrentWorkspace()) {
 alert("Нет прав на добавление участников");
 return;
 }
@@ -240,7 +246,7 @@ loadWorkspaceMembers();
 }
 
 function removeWorkspaceMember(userID) {
-if (!canManageSelectedWorkspace) {
+if (!canManageCurrentWorkspace()) {
 alert("Нет прав на удаление участников");
 return;
 }

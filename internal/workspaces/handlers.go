@@ -3,6 +3,7 @@ package workspaces
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/maystrenkobr-ops/dev-dashboard/internal/auth"
@@ -35,9 +36,7 @@ func (h *Handler) listWorkspaces(c *gin.Context) {
 
 	_, _ = h.store.EnsurePersonalWorkspace(c.Request.Context(), user.ID, user.Username)
 
-	isAdmin := user.Role == "admin"
-
-	workspaces, err := h.store.ListUserWorkspaces(c.Request.Context(), user.ID, isAdmin)
+	workspaces, err := h.store.ListUserWorkspaces(c.Request.Context(), user.ID, user.Role == "admin")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить рабочие области"})
 		return
@@ -72,16 +71,14 @@ func (h *Handler) createWorkspace(c *gin.Context) {
 }
 
 func (h *Handler) listMembers(c *gin.Context) {
-	user, workspaceID, ok := h.requireWorkspaceAccess(c)
+	user, workspaceID, ok := h.requireWorkspaceID(c)
 	if !ok {
 		return
 	}
 
-	isAdmin := user.Role == "admin"
-
-	canAccess, err := h.store.UserCanAccessWorkspace(c.Request.Context(), workspaceID, user.ID, isAdmin)
-	if err != nil || !canAccess {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Нет доступа к рабочей области"})
+	canManage, err := h.store.UserCanManageWorkspace(c.Request.Context(), workspaceID, user.ID, user.Role == "admin")
+	if err != nil || !canManage {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Нет прав на просмотр участников"})
 		return
 	}
 
@@ -95,14 +92,12 @@ func (h *Handler) listMembers(c *gin.Context) {
 }
 
 func (h *Handler) addMember(c *gin.Context) {
-	user, workspaceID, ok := h.requireWorkspaceAccess(c)
+	user, workspaceID, ok := h.requireWorkspaceID(c)
 	if !ok {
 		return
 	}
 
-	isAdmin := user.Role == "admin"
-
-	canManage, err := h.store.UserCanManageWorkspace(c.Request.Context(), workspaceID, user.ID, isAdmin)
+	canManage, err := h.store.UserCanManageWorkspace(c.Request.Context(), workspaceID, user.ID, user.Role == "admin")
 	if err != nil || !canManage {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Нет прав на управление рабочей областью"})
 		return
@@ -117,9 +112,20 @@ func (h *Handler) addMember(c *gin.Context) {
 		return
 	}
 
-	targetUser, _, err := h.authStore.GetUserByUsername(c.Request.Context(), authUsername(input.Username))
+	username := strings.ToLower(strings.TrimSpace(input.Username))
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Введите логин пользователя"})
+		return
+	}
+
+	targetUser, _, err := h.authStore.GetUserByUsername(c.Request.Context(), username)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Пользователь не найден"})
+		return
+	}
+
+	if targetUser.ID == user.ID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ты уже есть в этой рабочей области"})
 		return
 	}
 
@@ -132,14 +138,12 @@ func (h *Handler) addMember(c *gin.Context) {
 }
 
 func (h *Handler) removeMember(c *gin.Context) {
-	user, workspaceID, ok := h.requireWorkspaceAccess(c)
+	user, workspaceID, ok := h.requireWorkspaceID(c)
 	if !ok {
 		return
 	}
 
-	isAdmin := user.Role == "admin"
-
-	canManage, err := h.store.UserCanManageWorkspace(c.Request.Context(), workspaceID, user.ID, isAdmin)
+	canManage, err := h.store.UserCanManageWorkspace(c.Request.Context(), workspaceID, user.ID, user.Role == "admin")
 	if err != nil || !canManage {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Нет прав на управление рабочей областью"})
 		return
@@ -170,7 +174,7 @@ func (h *Handler) removeMember(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Участник удалён"})
 }
 
-func (h *Handler) requireWorkspaceAccess(c *gin.Context) (auth.User, int, bool) {
+func (h *Handler) requireWorkspaceID(c *gin.Context) (auth.User, int, bool) {
 	user, ok := auth.CurrentUser(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Требуется вход"})
@@ -183,26 +187,11 @@ func (h *Handler) requireWorkspaceAccess(c *gin.Context) (auth.User, int, bool) 
 		return auth.User{}, 0, false
 	}
 
-	return user, workspaceID, true
-}
-
-func authUsername(username string) string {
-	return normalizeUsernameForAuth(username)
-}
-
-func normalizeUsernameForAuth(username string) string {
-	result := ""
-
-	for _, ch := range username {
-		if ch >= 'A' && ch <= 'Z' {
-			result += string(ch + 32)
-			continue
-		}
-
-		if ch != ' ' && ch != '\t' && ch != '\n' && ch != '\r' {
-			result += string(ch)
-		}
+	canAccess, err := h.store.UserCanAccessWorkspace(c.Request.Context(), workspaceID, user.ID, user.Role == "admin")
+	if err != nil || !canAccess {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Нет доступа к рабочей области"})
+		return auth.User{}, 0, false
 	}
 
-	return result
+	return user, workspaceID, true
 }
