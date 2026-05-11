@@ -1,6 +1,6 @@
 ﻿# Dev Dashboard
 
-Публичный мини-dashboard для управления задачами.
+Публичный multi-workspace dashboard для управления задачами.
 
 Live demo: https://dev-dashboard-557n.onrender.com
 GitHub: https://github.com/maystrenkobr-ops/dev-dashboard
@@ -11,29 +11,58 @@ GitHub: https://github.com/maystrenkobr-ops/dev-dashboard
 
 ## Описание
 
-Dev Dashboard — это Kanban-доска задач на Go + Gin с веб-интерфейсом и хранением данных в PostgreSQL.
+Dev Dashboard — мини task manager / Kanban dashboard на Go + Gin с PostgreSQL, авторизацией, админ-панелью и рабочими областями.
 
-Проект сделан как практический backend/frontend MVP.
+Проект поддерживает личное использование, командные рабочие области и разделение доступа между пользователями.
 
 ## Возможности
 
-- создание задач
-- удаление задач
-- редактирование названия задачи
-- смена статуса: todo / in_progress / done
-- приоритеты: low / medium / high
-- дедлайны задач
-- поиск по задачам
-- фильтр по приоритету
-- Kanban-доска из трех колонок
-- drag-and-drop карточек между колонками
-- подсветка просроченных дедлайнов
-- PostgreSQL-хранилище на Render
 - регистрация и вход пользователей
 - bcrypt-хеширование паролей
 - cookie-сессии
-- admin-панель для управления пользователями
-- локальный fallback через data/tasks.json
+- admin-панель управления пользователями
+- рабочие области
+- личные рабочие области пользователей
+- добавление участников в рабочую область
+- роли workspace owner и member
+- global admin видит и модерирует всё
+- Kanban-доска todo / in_progress / done
+- создание, редактирование и удаление задач
+- drag-and-drop карточек между колонками
+- приоритеты low / medium / high
+- дедлайны задач
+- дата и время создания задач
+- московское время Europe/Moscow
+- подсветка просроченных и сегодняшних дедлайнов
+- поиск по задачам
+- фильтр по приоритету
+- PostgreSQL-хранилище на Render
+- локальный JSON fallback через data/tasks.json
+
+## Роли и доступы
+
+### Global admin
+
+- видит все рабочие области
+- видит всех пользователей
+- может удалять пользователей
+- может модерировать участников любой рабочей области
+- может работать с задачами в любой области
+
+### Workspace owner
+
+- управляет своей рабочей областью
+- добавляет участников
+- удаляет участников
+- создаёт и редактирует задачи
+
+### Workspace member
+
+- видит только доступные ему рабочие области
+- видит задачи внутри этих областей
+- может создавать и редактировать задачи
+- не видит список участников
+- не может добавлять или удалять участников
 
 ## Стек
 
@@ -47,29 +76,47 @@ Dev Dashboard — это Kanban-доска задач на Go + Gin с веб-и
 - JavaScript
 - Render
 - GitHub
+- Docker
 
-## Структура проекта
+## Основная структура проекта
 
-dev-dashboard/
-  cmd/server/main.go
-  web/index.html
-  web/styles.css
-  web/app.js
-  data/tasks.json
-  go.mod
-  go.sum
-  README.md
-  .gitignore
+- cmd/server/main.go
+- internal/auth
+- internal/tasks
+- internal/workspaces
+- web
+- docs/screenshot.png
+- RENDER.md
+- Dockerfile
 
-## API
+## Основные API
 
-GET    /tasks
-POST   /tasks
-PATCH  /tasks/:id/title
-PATCH  /tasks/:id/status
-PATCH  /tasks/:id/priority
-PATCH  /tasks/:id/deadline
-DELETE /tasks/:id
+Auth:
+- POST /api/register
+- POST /api/login
+- POST /api/logout
+- GET /api/me
+
+Admin:
+- GET /admin/users
+- GET /api/admin/users
+- DELETE /api/admin/users/:id
+
+Workspaces:
+- GET /api/workspaces
+- POST /api/workspaces
+- GET /api/workspaces/:id/members
+- POST /api/workspaces/:id/members
+- DELETE /api/workspaces/:id/members/:userID
+
+Tasks:
+- GET /tasks?workspace_id=:id
+- POST /tasks?workspace_id=:id
+- PATCH /tasks/:id/title?workspace_id=:id
+- PATCH /tasks/:id/status?workspace_id=:id
+- PATCH /tasks/:id/priority?workspace_id=:id
+- PATCH /tasks/:id/deadline?workspace_id=:id
+- DELETE /tasks/:id?workspace_id=:id
 
 ## Локальный запуск
 
@@ -81,10 +128,11 @@ http://localhost:8080
 
 ## Переменные окружения
 
-DATABASE_URL — строка подключения к PostgreSQL.
-PORT — порт сервера, на Render задается автоматически.
-
-Если DATABASE_URL не задана, приложение использует локальный JSON-файл data/tasks.json.
+- DATABASE_URL
+- ADMIN_USERNAME
+- ADMIN_PASSWORD
+- SESSION_SECRET
+- PORT
 
 ## Деплой
 
@@ -98,20 +146,4 @@ Start Command:
 
 ## Статус проекта
 
-Готовый MVP:
-- публичный деплой
-- PostgreSQL
-- рабочий CRUD задач
-- Kanban UI
-- поиск и фильтры
-- хранение данных в базе
-
-## Что можно улучшить дальше
-
-- авторизация пользователей
-- Dockerfile
-- тесты
-- отдельная backend-структура по слоям
-
-
-
+Готовый публичный portfolio-проект с авторизацией, PostgreSQL, рабочими областями, ролями, Kanban UI, drag-and-drop, дедлайнами, поиском, фильтрами и деплоем на Render.
