@@ -403,3 +403,29 @@ background: #0f172a;
 color: #cbd5e1;
 border: 1px solid #475569;
 }
+
+.workspace-panel {
+background: #1e293b;
+padding: 18px;
+border-radius: 16px;
+margin-bottom: 20px;
+display: flex;
+justify-content: space-between;
+gap: 12px;
+align-items: end;
+flex-wrap: wrap;
+}
+
+.workspace-label {
+display: block;
+color: #94a3b8;
+font-size: 13px;
+font-weight: bold;
+margin-bottom: 8px;
+}
+
+#workspaceSelect {
+min-width: 280px;
+background: #334155;
+color: white;
+}

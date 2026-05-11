@@ -11,11 +11,20 @@
 <div class="header-top">
 <div>
 <h1>Dev Dashboard</h1>
-<p class="subtitle">Мини-доска задач на Go + Gin + JSON.</p>
+<p class="subtitle">Мини-доска задач на Go + Gin + PostgreSQL.</p>
 </div>
 
 <div id="user-panel" class="user-panel"></div>
 </div>
+</div>
+
+<div class="workspace-panel">
+<div>
+<label class="workspace-label">Рабочая область</label>
+<select id="workspaceSelect" onchange="changeWorkspace()"></select>
+</div>
+
+<button onclick="createWorkspace()">Создать область</button>
 </div>
 
 <div class="form">

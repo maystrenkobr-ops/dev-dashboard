@@ -1,10 +1,118 @@
 ﻿const statuses = ["todo", "in_progress", "done"];
 let currentUser = null;
 let allTasks = [];
+let workspaces = [];
+let selectedWorkspaceId = 0;
 let draggedTaskId = null;
 
+function loadCurrentUser() {
+fetch("/api/me")
+.then(response => {
+if (response.status === 401) {
+window.location.href = "/login";
+return null;
+}
+
+return response.json();
+})
+.then(user => {
+if (!user) {
+return;
+}
+
+currentUser = user;
+renderUserPanel();
+loadWorkspaces();
+});
+}
+
+function loadWorkspaces() {
+fetch("/api/workspaces")
+.then(response => response.json())
+.then(data => {
+workspaces = data;
+
+const savedWorkspaceID = Number(localStorage.getItem("selected_workspace_id"));
+const savedExists = workspaces.some(workspace => workspace.id === savedWorkspaceID);
+
+if (savedWorkspaceID && savedExists) {
+selectedWorkspaceId = savedWorkspaceID;
+} else if (workspaces.length > 0) {
+selectedWorkspaceId = workspaces[0].id;
+}
+
+renderWorkspacePanel();
+loadTasks();
+});
+}
+
+function renderWorkspacePanel() {
+const select = document.getElementById("workspaceSelect");
+
+if (!select) {
+return;
+}
+
+select.innerHTML = workspaces.map(workspace =>
+"<option value='" + workspace.id + "'>" + escapeHtml(workspace.name) + "</option>"
+).join("");
+
+select.value = String(selectedWorkspaceId);
+}
+
+function changeWorkspace() {
+const select = document.getElementById("workspaceSelect");
+selectedWorkspaceId = Number(select.value);
+localStorage.setItem("selected_workspace_id", String(selectedWorkspaceId));
+loadTasks();
+}
+
+function createWorkspace() {
+const name = prompt("Название рабочей области:");
+
+if (name === null) {
+return;
+}
+
+if (name.trim() === "") {
+alert("Название рабочей области не может быть пустым");
+return;
+}
+
+fetch("/api/workspaces", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+name: name.trim()
+})
+})
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+if (!result.ok) {
+alert(result.data.error || "Не удалось создать рабочую область");
+return;
+}
+
+selectedWorkspaceId = result.data.id;
+localStorage.setItem("selected_workspace_id", String(selectedWorkspaceId));
+loadWorkspaces();
+});
+}
+
+function taskQuery() {
+return "?workspace_id=" + selectedWorkspaceId;
+}
+
 function loadTasks() {
-fetch("/tasks")
+if (!selectedWorkspaceId) {
+allTasks = [];
+renderTasks();
+return;
+}
+
+fetch("/tasks" + taskQuery())
 .then(response => response.json())
 .then(tasks => {
 allTasks = tasks;
@@ -153,12 +261,13 @@ alert("Введите название задачи");
 return;
 }
 
-fetch("/tasks", {
+fetch("/tasks" + taskQuery(), {
 method: "POST",
 headers: {
 "Content-Type": "application/json"
 },
 body: JSON.stringify({
+workspace_id: selectedWorkspaceId,
 title: title,
 status: status,
 priority: priority,
@@ -185,7 +294,7 @@ alert("Название задачи не может быть пустым");
 return;
 }
 
-fetch("/tasks/" + id + "/title", {
+fetch("/tasks/" + id + "/title" + taskQuery(), {
 method: "PATCH",
 headers: {
 "Content-Type": "application/json"
@@ -207,7 +316,7 @@ if (newDeadline === null) {
 return;
 }
 
-fetch("/tasks/" + id + "/deadline", {
+fetch("/tasks/" + id + "/deadline" + taskQuery(), {
 method: "PATCH",
 headers: {
 "Content-Type": "application/json"
@@ -228,7 +337,7 @@ loadTasks();
 }
 
 function updateStatus(id, status) {
-fetch("/tasks/" + id + "/status", {
+fetch("/tasks/" + id + "/status" + taskQuery(), {
 method: "PATCH",
 headers: {
 "Content-Type": "application/json"
@@ -244,7 +353,7 @@ loadTasks();
 }
 
 function updatePriority(id, priority) {
-fetch("/tasks/" + id + "/priority", {
+fetch("/tasks/" + id + "/priority" + taskQuery(), {
 method: "PATCH",
 headers: {
 "Content-Type": "application/json"
@@ -260,32 +369,11 @@ loadTasks();
 }
 
 function deleteTask(id) {
-fetch("/tasks/" + id, {
+fetch("/tasks/" + id + taskQuery(), {
 method: "DELETE"
 })
 .then(response => response.json())
 .then(() => {
-loadTasks();
-});
-}
-
-function loadCurrentUser() {
-fetch("/api/me")
-.then(response => {
-if (response.status === 401) {
-window.location.href = "/login";
-return null;
-}
-
-return response.json();
-})
-.then(user => {
-if (!user) {
-return;
-}
-
-currentUser = user;
-renderUserPanel();
 loadTasks();
 });
 }
