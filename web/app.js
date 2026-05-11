@@ -4,6 +4,7 @@ let allTasks = [];
 let workspaces = [];
 let selectedWorkspaceId = 0;
 let draggedTaskId = null;
+let membersPanelOpen = false;
 
 function loadCurrentUser() {
 fetch("/api/me")
@@ -43,6 +44,10 @@ selectedWorkspaceId = workspaces[0].id;
 
 renderWorkspacePanel();
 loadTasks();
+
+if (membersPanelOpen) {
+loadWorkspaceMembers();
+}
 });
 }
 
@@ -65,6 +70,10 @@ const select = document.getElementById("workspaceSelect");
 selectedWorkspaceId = Number(select.value);
 localStorage.setItem("selected_workspace_id", String(selectedWorkspaceId));
 loadTasks();
+
+if (membersPanelOpen) {
+loadWorkspaceMembers();
+}
 }
 
 function createWorkspace() {
@@ -101,6 +110,123 @@ loadWorkspaces();
 });
 }
 
+function toggleMembersPanel() {
+const panel = document.getElementById("membersPanel");
+
+if (!panel) {
+return;
+}
+
+membersPanelOpen = panel.classList.contains("hidden");
+
+if (membersPanelOpen) {
+panel.classList.remove("hidden");
+loadWorkspaceMembers();
+} else {
+panel.classList.add("hidden");
+}
+}
+
+function loadWorkspaceMembers() {
+if (!selectedWorkspaceId) {
+return;
+}
+
+fetch("/api/workspaces/" + selectedWorkspaceId + "/members")
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+const list = document.getElementById("membersList");
+
+if (!list) {
+return;
+}
+
+if (!result.ok) {
+list.innerHTML = "<p class='auth-error'>" + escapeHtml(result.data.error || "Не удалось получить участников") + "</p>";
+return;
+}
+
+renderMembers(result.data);
+});
+}
+
+function renderMembers(members) {
+const list = document.getElementById("membersList");
+
+if (!list) {
+return;
+}
+
+if (!members || members.length === 0) {
+list.innerHTML = "<div class='empty'>Участников пока нет</div>";
+return;
+}
+
+list.innerHTML = members.map(member =>
+"<div class='member-row'>" +
+"<div>" +
+"<b>" + escapeHtml(member.username || ("user #" + member.user_id)) + "</b>" +
+"<br><span>Роль: " + escapeHtml(member.role) + "</span>" +
+"<br><span>Добавлен: " + escapeHtml(member.created_at) + "</span>" +
+"</div>" +
+"<button class='delete-btn' onclick='removeWorkspaceMember(" + member.user_id + ")'>Удалить</button>" +
+"</div>"
+).join("");
+}
+
+function addWorkspaceMember() {
+const usernameInput = document.getElementById("memberUsername");
+const roleInput = document.getElementById("memberRole");
+
+const username = usernameInput.value.trim();
+const role = roleInput.value;
+
+if (username === "") {
+alert("Введите логин пользователя");
+return;
+}
+
+fetch("/api/workspaces/" + selectedWorkspaceId + "/members", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+username: username,
+role: role
+})
+})
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+if (!result.ok) {
+alert(result.data.error || "Не удалось добавить пользователя");
+return;
+}
+
+usernameInput.value = "";
+loadWorkspaceMembers();
+});
+}
+
+function removeWorkspaceMember(userID) {
+if (!confirm("Удалить пользователя из рабочей области?")) {
+return;
+}
+
+fetch("/api/workspaces/" + selectedWorkspaceId + "/members/" + userID, {
+method: "DELETE"
+})
+.then(response => response.json().then(data => ({ ok: response.ok, data })))
+.then(result => {
+if (!result.ok) {
+alert(result.data.error || "Не удалось удалить участника");
+return;
+}
+
+loadWorkspaceMembers();
+});
+}
+
 function taskQuery() {
 return "?workspace_id=" + selectedWorkspaceId;
 }
@@ -115,7 +241,7 @@ return;
 fetch("/tasks" + taskQuery())
 .then(response => response.json())
 .then(tasks => {
-allTasks = tasks;
+allTasks = Array.isArray(tasks) ? tasks : [];
 renderTasks();
 });
 }

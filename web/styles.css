@@ -429,3 +429,61 @@ min-width: 280px;
 background: #334155;
 color: white;
 }
+
+.workspace-actions {
+display: flex;
+gap: 10px;
+flex-wrap: wrap;
+}
+
+.members-panel {
+background: #1e293b;
+padding: 18px;
+border-radius: 16px;
+margin-bottom: 20px;
+}
+
+.hidden {
+display: none;
+}
+
+.members-header h2 {
+margin: 0 0 8px 0;
+}
+
+.members-header p {
+margin: 0 0 14px 0;
+color: #cbd5e1;
+}
+
+.members-add {
+display: flex;
+gap: 10px;
+flex-wrap: wrap;
+margin-bottom: 16px;
+}
+
+.members-add input {
+width: 260px;
+}
+
+.members-add select {
+background: #334155;
+color: white;
+}
+
+.member-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 16px;
+background: #334155;
+border-radius: 12px;
+padding: 14px;
+margin-bottom: 10px;
+}
+
+.member-row span {
+color: #cbd5e1;
+font-size: 13px;
+}
